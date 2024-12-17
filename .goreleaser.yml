@@ -1,11 +1,5 @@
-project_name: "xfab"
-# before:
-#   hooks:
-#     - go mod tidy
-
 builds:
   - binary: "xfab"
-    id: linux_build
     goos:
       - linux
       - windows
@@ -14,7 +8,10 @@ builds:
       - amd64
       - arm64
       - arm
-    main: ./backend
+    env:
+      - CGO_ENABLED=0
+    flags: 
+      - -mod=vendor
 
 # archives:
 #   - id: linux_archive
@@ -37,5 +34,5 @@ release:
   prerelease: auto
 
 checksum:
-  name_template: "{{ .ProjectName }}_checksums.txt"
+  name_template: "checksums.txt"
     algorithm: sha256
