@@ -23,7 +23,7 @@ archives:
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     files:
       - docs/**
-      - readme.md
+      - README.md
       - ./backend/config/*
 
   - id: windows_archive
