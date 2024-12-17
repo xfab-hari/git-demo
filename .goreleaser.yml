@@ -1,0 +1,37 @@
+project_name: "xfab"
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - binary: "release/xfab"
+    id: linux_build
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    main: ./backend
+
+archives:
+  - id: linux_archive
+    builds:
+      - linux_build
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - docs/**
+      - readme.md
+      - ./backend/config/*
+
+  - id: windows_archive
+    builds:
+      - windows_build
+    format: zip
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+    algorithm: sha256
