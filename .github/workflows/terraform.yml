@@ -88,4 +88,5 @@ jobs:
          timeout: 30000
          retry: 3
          retryWait: 5000
+         body: '{"plan": "${{ env.PLAN_CONTENT }}"}'
  
