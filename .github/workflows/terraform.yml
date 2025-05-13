@@ -74,5 +74,5 @@ jobs:
          url: ${{ secrets.WEBHOOK_URL }}
          method: POST
          contentType: 'application/json'
-         filePath: ./terraform/tfplan.json
+         file: ./terraform/tfplan.json
  
