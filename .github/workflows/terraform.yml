@@ -15,8 +15,6 @@ env:
  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
 
 
-
-
 jobs:
  terraform:
    name: "Terraform Infrastructure Change Management"
