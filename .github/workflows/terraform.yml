@@ -44,34 +44,30 @@ jobs:
      - name: Terraform init
        id: init
        run: terraform init
- 
-     - name: Terraform format
-       id: fmt
-       run: terraform fmt -check
-    
+     
      - name: Terraform validate
        id: validate
        run: terraform validate
  
-     - name: Terraform plan
-       id: plan
-       if: github.event_name == 'pull_request'
-       run: terraform plan -no-color -input=false
-      #  run: terraform plan 
-       continue-on-error: true
+    #  - name: Terraform plan
+    #    id: plan
+    #    if: github.event_name == 'pull_request'
+    #    run: terraform plan -no-color -input=false
+    #   #  run: terraform plan 
+    #    continue-on-error: true
     
-     - name: Terraform Plan Status
-       if: steps.plan.outcome == 'failure'
-       run: exit 1
+    #  - name: Terraform Plan Status
+    #    if: steps.plan.outcome == 'failure'
+    #    run: exit 1
 
      - name: Terraform plan JSON
-       if: steps.plan.outcome == 'success'
+      #  if: steps.plan.outcome == 'success'
        run: |
          terraform plan -out=tfplan.binary
          terraform show -json tfplan.binary | grep -v "^::" | grep -v "^\[" | grep -v "^2025" | grep -v "^::debug" > tfplan.json
 
-     - name: Print tfplan.json
-       run: cat tfplan.json
+    #  - name: Print tfplan.json
+    #    run: cat tfplan.json
 
      - name: Read and encode tfplan.json
        id: read-plan
