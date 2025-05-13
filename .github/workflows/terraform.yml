@@ -89,6 +89,9 @@ jobs:
          echo "$PLAN_CONTENT" >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
 
+     - name: Print PLAN_CONTENT
+       run: echo "PLAN_CONTENT: $PLAN_CONTENT"
+
      - name: POST REST API Call
        uses: fjogeleit/http-request-action@v1
        with:
