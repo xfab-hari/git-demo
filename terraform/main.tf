@@ -7,11 +7,14 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
-}
-
-resource "aws_instance" "example" {
-  ami = "ami-052c08d706f3f0fbd"
-  instance_type = "t2.micro"
+ region = "us-west-2"
 }
  
+resource "aws_instance" "test_instance" {
+ ami           = "ami-830c94e3"
+ instance_type = "t2.nano"
+ tags = {
+   Name = "test_instance"
+ }
+}
+
