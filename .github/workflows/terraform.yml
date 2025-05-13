@@ -68,11 +68,19 @@ jobs:
        if: steps.plan.outcome == 'success'
        run: terraform plan -out=tfplan.binary && terraform show -json tfplan.binary > tfplan.json
 
+     - name: Read tfplan.json
+       id: read-plan
+       run: |
+         PLAN_CONTENT=$(cat tfplan.json)
+         echo "PLAN_CONTENT<<EOF" >> $GITHUB_ENV
+         echo "$PLAN_CONTENT" >> $GITHUB_ENV
+         echo "EOF" >> $GITHUB_ENV
+
      - name: POST REST API Call
        uses: fjogeleit/http-request-action@v1
        with:
          url: ${{ secrets.WEBHOOK_URL }}
          method: POST
          contentType: 'application/json'
-         file: ./terraform/tfplan.json
+         data: ${{ env.PLAN_CONTENT }}
  
