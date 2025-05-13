@@ -68,37 +68,13 @@ jobs:
        if: steps.plan.outcome == 'success'
        run: terraform plan -out=tfplan.binary && terraform show -json tfplan.binary > tfplan.json
 
-     - name: Read and compress tfplan.json
-       id: read-plan
-       run: |
-         if [ ! -f tfplan.json ]; then
-           echo "Error: tfplan.json file not found"
-           exit 1
-         fi
-         
-         if [ ! -s tfplan.json ]; then
-           echo "Error: tfplan.json file is empty"
-           exit 1
-         fi
-         
-         echo "File contents:"
-         cat tfplan.json
-         
-         PLAN_CONTENT=$(cat tfplan.json)
-         echo "PLAN_CONTENT<<EOF" >> $GITHUB_ENV
-         echo "$PLAN_CONTENT" >> $GITHUB_ENV
-         echo "EOF" >> $GITHUB_ENV
-
-     - name: Print PLAN_CONTENT
-       run: echo ${{ env.PLAN_CONTENT }}
-
      - name: POST REST API Call
        uses: fjogeleit/http-request-action@v1
        with:
          url: ${{ secrets.WEBHOOK_URL }}
          method: POST
          contentType: 'application/json'
-         data: ${{ env.PLAN_CONTENT }}
+         file: ./terraform/tfplan.json
          timeout: 30000
          retry: 3
          retryWait: 5000
