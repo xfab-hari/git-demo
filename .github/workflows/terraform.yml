@@ -1,11 +1,6 @@
 name: "Terraform Infrastructure Change Management Pipeline with GitHub Actions"
  
 on:
- push:
-   branches:
-   - main
-   paths:
-   - terraform/**
  pull_request:
    branches:
    - main
@@ -13,7 +8,7 @@ on:
    - terraform/**
  
 env:
- TF_LOG: WARN
+ TF_LOG: INFO
  # Credentials for deployment to AWS
  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -49,25 +44,10 @@ jobs:
        id: validate
        run: terraform validate
  
-    #  - name: Terraform plan
-    #    id: plan
-    #    if: github.event_name == 'pull_request'
-    #    run: terraform plan -no-color -input=false
-    #   #  run: terraform plan 
-    #    continue-on-error: true
-    
-    #  - name: Terraform Plan Status
-    #    if: steps.plan.outcome == 'failure'
-    #    run: exit 1
-
      - name: Terraform plan JSON
-      #  if: steps.plan.outcome == 'success'
        run: |
          terraform plan -out=tfplan.binary
          terraform show -json tfplan.binary | grep -v "^::" | grep -v "^\[" | grep -v "^2025" | grep -v "^::debug" > tfplan.json
-
-    #  - name: Print tfplan.json
-    #    run: cat tfplan.json
 
      - name: Read and encode tfplan.json
        id: read-plan
@@ -84,7 +64,6 @@ jobs:
          method: POST
          contentType: 'application/json'
          data: '{"plan": "${{ env.PLAN_CONTENT }}"}'
-        #  data: ${{ env.PLAN_CONTENT }}
          timeout: 30000
          retry: 3
          retryWait: 5000
