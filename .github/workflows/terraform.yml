@@ -73,7 +73,7 @@ jobs:
          terraform show -json tfplan.binary > tfplan.json
 
      - name: Print tfplan.json
-       run: cat tfplan.json
+       run: cat tfplan.json | jq '.'
 
      - name: Read and encode tfplan.json
        id: read-plan
