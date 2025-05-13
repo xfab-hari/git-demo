@@ -34,16 +34,10 @@ jobs:
        with:
          terraform_version: 1.3.0
     
-     - name: Terraform init
-       id: init
-       run: terraform init
-     
-     - name: Terraform validate
-       id: validate
-       run: terraform validate
- 
-     - name: Terraform plan JSON
+     - name: Terraform init, validate and plan
        run: |
+         terraform init
+         terraform validate
          terraform plan -out=tfplan.binary
          terraform show -json tfplan.binary | grep -v "^::" | grep -v "^\[" | grep -v "^2025" | grep -v "^::debug" > tfplan.json
 
