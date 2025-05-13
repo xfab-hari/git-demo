@@ -73,5 +73,6 @@ jobs:
        with:
          url: ${{ secrets.WEBHOOK_URL }}
          method: POST
-         body: ${{ steps.plan.outputs.stdout }}
+         contentType: 'application/json'
+         filePath: ./terraform/tfplan.json
  
