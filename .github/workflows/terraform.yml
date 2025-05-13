@@ -14,10 +14,9 @@ env:
  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
 
-
 jobs:
  terraform:
-   name: "Terraform Infrastructure Change Management"
+   name: "Impact Simulation"
    runs-on: ubuntu-latest
    defaults:
      run:
