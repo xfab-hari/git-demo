@@ -69,7 +69,7 @@ jobs:
        run: terraform plan -out=tfplan.binary && terraform show -json tfplan.binary > tfplan.json
 
      - name: POST REST API Call
-       uses: dawidd6/action-http-request@v3
+       uses: fjogeleit/http-request-action@v1
        with:
          url: ${{ secrets.WEBHOOK_URL }}
          method: POST
