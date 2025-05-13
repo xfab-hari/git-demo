@@ -34,16 +34,16 @@ jobs:
        with:
          terraform_version: 1.3.0
     
-     - name: Terraform init, validate and plan
+     - name: Generate Terraform Plan
        run: |
          terraform init
          terraform validate
          terraform plan -out=tfplan.binary
          terraform show -json tfplan.binary | grep -v "^::" | grep -v "^\[" | grep -v "^2025" | grep -v "^::debug" > tfplan.json
 
-     - name: Read and encode tfplan.json
-       id: read-plan
-       run: |
+    #  - name: Read and encode tfplan.json
+    #    id: read-plan
+    #    run: |
          PLAN_CONTENT=$(cat tfplan.json | tr -d '\n' | base64 -w 0)
          echo "PLAN_CONTENT<<EOF" >> $GITHUB_ENV
          echo "$PLAN_CONTENT" >> $GITHUB_ENV
