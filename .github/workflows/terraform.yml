@@ -60,34 +60,18 @@ jobs:
       #  run: terraform plan 
        continue-on-error: true
     
-     - uses: actions/github-script@v6
-       if: github.event_name == 'pull_request'
-       env:
-         PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-       with:
-         script: |
-           const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-           #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-           #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
-           #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
- 
-           <details><summary>Show Plan</summary>
- 
-           \`\`\`\n
-           ${process.env.PLAN}
-           \`\`\`
- 
-           </details>
-           *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
- 
-           github.rest.issues.createComment({
-             issue_number: context.issue.number,
-             owner: context.repo.owner,
-             repo: context.repo.repo,
-             body: output
-           })
- 
      - name: Terraform Plan Status
        if: steps.plan.outcome == 'failure'
        run: exit 1
+
+     - name: Terraform plan JSON
+       if: steps.plan.outcome == 'success'
+       run: terraform plan -out=tfplan.binary && terraform show -json tfplan.binary > tfplan.json
+
+     - name: POST REST API Call
+       uses: dawidd6/action-http-request@v3
+       with:
+         url: ${{ secrets.WEBHOOK_URL }}
+         method: POST
+         body: ${{ steps.plan.outputs.stdout }}
  
