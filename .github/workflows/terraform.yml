@@ -87,8 +87,8 @@ jobs:
          url: ${{ secrets.WEBHOOK_URL }}
          method: POST
          contentType: 'application/json'
-        #  data: '{"plan": "${{ env.PLAN_CONTENT }}"}'
-         data: ${{ env.PLAN_CONTENT }}
+         data: '{"plan": "${{ env.PLAN_CONTENT }}"}'
+        #  data: ${{ env.PLAN_CONTENT }}
          timeout: 30000
          retry: 3
          retryWait: 5000
