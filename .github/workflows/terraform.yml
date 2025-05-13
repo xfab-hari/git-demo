@@ -70,7 +70,7 @@ jobs:
        if: steps.plan.outcome == 'success'
        run: |
          terraform plan -out=tfplan.binary
-         terraform show -json tfplan.binary | jq > tfplan.json
+         terraform show -json tfplan.binary | jq . > tfplan.json
 
      - name: Read and encode tfplan.json
        id: read-plan
