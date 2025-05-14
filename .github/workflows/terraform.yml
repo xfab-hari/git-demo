@@ -63,7 +63,16 @@ jobs:
            -X POST \
            -H "Content-Type: application/json" \
            -H "Authorization: Basic $AUTH_HEADER" \
-           -d '{"plan": "${{ env.PLAN_CONTENT }}"}' \
+           -d '{
+             "plan": "${{ env.PLAN_CONTENT }}",
+             "github_context": {
+               "owner": "${{ github.repository_owner }}",
+               "repo": "${{ github.event.repository.name }}",
+               "pr_number": "${{ github.event.pull_request.number }}",
+               "commit_sha": "${{ github.sha }}",
+               "run_id": "${{ github.run_id }}"
+             }
+           }' \
            "${{ secrets.WEBHOOK_URL }}")
          
          # Split response into body and status code
