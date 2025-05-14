@@ -18,6 +18,9 @@ env:
  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+ # API credentials
+ API_USERNAME: "terraform"
+ API_PASSWORD: ${{ secrets.API_PASSWORD }}
 
 jobs:
  terraform:
@@ -52,10 +55,14 @@ jobs:
      - name: Send Plan and Wait for Analysis
        id: send-plan
        run: |
+         # Create Basic Auth header
+         AUTH_HEADER=$(echo -n "${{ env.API_USERNAME }}:${{ env.API_PASSWORD }}" | base64)
+         
          # Send request and capture response
          response=$(curl -s -w "\n%{http_code}" \
            -X POST \
            -H "Content-Type: application/json" \
+           -H "Authorization: Basic $AUTH_HEADER" \
            -d '{"plan": "${{ env.PLAN_CONTENT }}"}' \
            "${{ secrets.WEBHOOK_URL }}")
          
