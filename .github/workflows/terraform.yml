@@ -52,6 +52,11 @@ jobs:
          echo "$PLAN_CONTENT" >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
 
+     - name: Print Terraform Plan
+       run: |
+         echo "Terraform Plan Content:"
+         echo "${{ env.PLAN_CONTENT }}"
+
      - name: Send Plan and Wait for Analysis
        id: send-plan
        run: |
