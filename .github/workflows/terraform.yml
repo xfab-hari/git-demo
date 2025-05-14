@@ -6,7 +6,12 @@ on:
    - main
    paths:
    - terraform/**
- 
+
+# Add permissions block
+permissions:
+  pull-requests: write
+  issues: write
+
 env:
  TF_LOG: INFO
  # Credentials for deployment to AWS
@@ -77,6 +82,7 @@ jobs:
      - name: Post Analysis as PR Comment
        uses: actions/github-script@v6
        with:
+         github-token: ${{ secrets.GITHUB_TOKEN }}
          script: |
            await github.rest.issues.createComment({
              owner: context.repo.owner,
