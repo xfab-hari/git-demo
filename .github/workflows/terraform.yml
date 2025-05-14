@@ -58,13 +58,15 @@ jobs:
          status_code=$(echo "$response" | tail -n1)
          body=$(echo "$response" | sed '$d')
          
-         # Save response body to file
-         echo "$body" > analysis.md
-         
          # Print response details
          echo "Response Status Code: $status_code"
          echo "Response Body:"
          echo "$body"
+         
+         # Save body to environment variable for next step
+         echo "RESPONSE_BODY<<EOF" >> $GITHUB_ENV
+         echo "$body" >> $GITHUB_ENV
+         echo "EOF" >> $GITHUB_ENV
          
          # Exit if status code is not 2xx
          if [[ ! $status_code =~ ^2[0-9]{2}$ ]]; then
@@ -76,16 +78,10 @@ jobs:
        uses: actions/github-script@v6
        with:
          script: |
-            const fs = require('fs');
-            const analysis = fs.readFileSync('analysis.md', 'utf8');
-            const prNumber = context.issue.number;
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            
-            await github.rest.issues.createComment({
-              owner: owner,
-              repo: repo,
-              issue_number: prNumber,
-              body: analysis
-            });
+           await github.rest.issues.createComment({
+             owner: context.repo.owner,
+             repo: context.repo.repo,
+             issue_number: context.issue.number,
+             body: process.env.RESPONSE_BODY
+           });
  
