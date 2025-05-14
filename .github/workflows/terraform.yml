@@ -44,7 +44,6 @@ jobs:
          echo "$PLAN_CONTENT" >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
 
-
      - name: Send Plan and Wait for Analysis
        uses: fjogeleit/http-request-action@v1
        with:
@@ -58,6 +57,28 @@ jobs:
          waitForResponse: true  # Wait for the response
          responseFormat: 'text'  # Expect text/markdown response
          responseOutput: 'analysis.md'  # Save response to markdown file
+
+     - name: Verify Response Content
+       run: |
+         if [ ! -f analysis.md ]; then
+           echo "Error: No response file was generated"
+           exit 1
+         fi
+         
+         if [ ! -s analysis.md ]; then
+           echo "Error: Response file is empty"
+           exit 1
+         fi
+         
+         # Check if the response contains at least a header
+         if ! grep -q "^#" analysis.md; then
+           echo "Error: Response does not contain expected markdown format"
+           exit 1
+         fi
+         
+         echo "Response verification successful"
+         echo "Response content:"
+         cat analysis.md
 
      - name: Create Analysis File
        if: always()
