@@ -44,6 +44,7 @@ jobs:
          echo "$PLAN_CONTENT" >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
 
+
      - name: Send Plan and Wait for Analysis
        uses: fjogeleit/http-request-action@v1
        with:
@@ -58,23 +59,28 @@ jobs:
          responseFormat: 'text'  # Expect text/markdown response
          responseOutput: 'analysis.md'  # Save response to markdown file
 
+     - name: Create Analysis File
+       if: always()
+       run: |
+          if [ ! -f analysis.md ]; then
+            echo "# Terraform Plan Analysis" > analysis.md
+            echo "No analysis was generated." >> analysis.md
+          fi
+
      - name: Post Analysis as PR Comment
        uses: actions/github-script@v6
        with:
-         github-token: ${{ secrets.GITHUB_TOKEN }}
          script: |
-           const fs = require('fs');
-           const analysis = fs.readFileSync('analysis.md', 'utf8');
-           
-           github.rest.issues.createComment({
-             issue_number: context.issue.number,
-             owner: context.repo.owner,
-             repo: context.repo.repo,
-             body: analysis
-           });
-
-     - name: Display Analysis Results
-       run: |
-         echo "Analysis Results:"
-         cat response.json
+            const fs = require('fs');
+            const analysis = fs.readFileSync('analysis.md', 'utf8');
+            const prNumber = context.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            await github.rest.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: prNumber,
+              body: analysis
+            });
  
