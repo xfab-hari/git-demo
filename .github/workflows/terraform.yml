@@ -54,9 +54,8 @@ jobs:
          timeout: 600000  # 10 minutes in milliseconds
          retry: 3
          retryWait: 5000
-         waitForResponse: true  # Wait for the response
-         responseFormat: 'text'  # Expect text/markdown response
-         responseOutput: 'analysis.md'  # Save response to markdown file
+         responseFile: 'analysis.md'  # Save response to file
+         preventFailureOnNoResponse: true
 
      - name: Verify Response Content
        run: |
