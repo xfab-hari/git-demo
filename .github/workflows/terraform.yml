@@ -75,9 +75,12 @@ jobs:
          echo "Response Body:"
          echo "$body"
          
-         # Save body to environment variable for next step
+         # Extract fullResponse from JSON using jq
+         fullResponse=$(echo "$body" | jq -r '.response')
+         
+         # Save fullResponse to environment variable
          echo "RESPONSE_BODY<<EOF" >> $GITHUB_ENV
-         echo "$body" >> $GITHUB_ENV
+         echo "$fullResponse" >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
          
          # Exit if status code is not 2xx
