@@ -1,4 +1,13 @@
-name: "Impact Simulation"
+# Required GitHub Secrets:
+# AWS_ACCESS_KEY_ID: AWS access key for authentication
+# AWS_SECRET_ACCESS_KEY: AWS secret key for authentication
+# AWS_SESSION_TOKEN: AWS session token for temporary credentials
+# WEBHOOK_URL: URL endpoint for sending Terraform plan for analysis
+# GITHUB_TOKEN: Automatically provided by GitHub Actions, no need to set manually
+# SIMULATION_API_USERNAME: Username for the simulation API
+# SIMULATION_API_PASSWORD: Password for the simulation API
+
+name: "Cielara - Impact Simulation"
  
 on:
  pull_request:
@@ -7,10 +16,12 @@ on:
    paths:
    - terraform/**
 
-# Add permissions block
-permissions:
-  pull-requests: write
-  issues: write
+# # Add permissions block
+# permissions:
+#   pull-requests: write
+#   issues: write
+
+contents: read #doing it explicitly
 
 env:
  TF_LOG: INFO
@@ -18,9 +29,9 @@ env:
  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
- # API credentials
- API_USERNAME: "terraform"
- API_PASSWORD: ${{ secrets.API_PASSWORD }}
+ # Simon github-actions related API Configuration
+ SIMON_GITHUB_ACTIONS_API_USERNAME: ${{ secrets.SIMON_GITHUB_ACTIONS_API_USERNAME }}
+ SIMON_GITHUB_ACTIONS_API_PASSWORD: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
 
 jobs:
  terraform:
@@ -56,11 +67,11 @@ jobs:
          echo "$PLAN_CONTENT" >> $GITHUB_ENV
          echo "EOF" >> $GITHUB_ENV
 
-     - name: Send Plan and Wait for Analysis
+     - name: Send Terraform Plan to Simon for Impact Analysis
        id: send-plan
        run: |
          # Create Basic Auth header
-         AUTH_HEADER=$(echo -n "${{ env.API_USERNAME }}:${{ env.API_PASSWORD }}" | base64)
+         AUTH_HEADER=$(echo -n "${{ env.SIMON_GITHUB_ACTIONS_API_USERNAME }}:${{ env.SIMON_GITHUB_ACTIONS_API_PASSWORD }}" | base64)
          
          # Send request and capture response
          response=$(curl -s -w "\n%{http_code}" \
@@ -88,30 +99,8 @@ jobs:
          echo "Response Body:"
          echo "$body"
          
-         # Extract fullResponse from JSON using jq
-         fullResponse=$(echo "$body" | jq -r '.response')
-         
-         # Save fullResponse to environment variable
-         echo "RESPONSE_BODY<<EOF" >> $GITHUB_ENV
-         echo "$fullResponse" >> $GITHUB_ENV
-         echo "EOF" >> $GITHUB_ENV
-         
          # Exit if status code is not 2xx
          if [[ ! $status_code =~ ^2[0-9]{2}$ ]]; then
            echo "Error: Received non-2xx status code: $status_code"
            exit 1
          fi
-
-     - name: Post Analysis as PR Comment
-       uses: actions/github-script@v6
-       with:
-         github-token: ${{ secrets.GITHUB_TOKEN }}
-         script: |
-           await github.rest.issues.createComment({
-             owner: context.repo.owner,
-             repo: context.repo.repo,
-             issue_number: context.issue.number,
-             body: process.env.RESPONSE_BODY
-           });
- 
- 
