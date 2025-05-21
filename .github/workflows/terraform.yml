@@ -99,6 +99,9 @@ jobs:
 
      - name: Send plan for Impact Analysis
        id: send-plan
+       with:
+         simon_github_actions_api_username: ${{ secrets.SIMON_GITHUB_ACTIONS_API_USERNAME }}
+         simon_github_actions_api_password: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
        run: |
          # Create Basic Auth header
          AUTH_HEADER=$(echo -n "${{ env.SIMON_GITHUB_ACTIONS_API_USERNAME }}:${{ env.SIMON_GITHUB_ACTIONS_API_PASSWORD }}" | base64)
@@ -134,6 +137,3 @@ jobs:
            echo "Error: Received non-2xx status code: $status_code"
            exit 1
          fi
-      with:
-        simon_github_actions_api_username: ${{ secrets.SIMON_GITHUB_ACTIONS_API_USERNAME }}
-        simon_github_actions_api_password: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
