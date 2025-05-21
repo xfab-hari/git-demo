@@ -17,11 +17,13 @@ on:
    - terraform/**
 
 # # Add permissions block
-# permissions:
+permissions:
 #   pull-requests: write
-#   issues: write
+  # issues: write
+  contents: read #doing it explicitly
 
-contents: read #doing it explicitly
+
+
 
 env:
  TF_LOG: INFO
