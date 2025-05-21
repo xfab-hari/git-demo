@@ -51,10 +51,10 @@ jobs:
        with:
          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
  
-    #  - name: Setup Terraform with specified version on the runner
-    #    uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-    #    with:
-    #      terraform_version: 1.12.0 # latest version as of 2025-05-21
+     - name: Setup Terraform with specified version on the runner
+       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+       with:
+         terraform_version: 1.12.0 # latest version as of 2025-05-21
     
      - name: Generate Terraform Plan
        run: |
