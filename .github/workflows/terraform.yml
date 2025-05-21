@@ -99,12 +99,12 @@ jobs:
 
      - name: Send plan for Impact Analysis
        id: send-plan
-       with:
-         simon_github_actions_api_username: ${{ secrets.SIMON_GITHUB_ACTIONS_API_USERNAME }}
-         simon_github_actions_api_password: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
+       env:
+         SIMON_GITHUB_ACTIONS_API_USERNAME: ${{ secrets.SIMON_GITHUB_ACTIONS_API_USERNAME }}
+         SIMON_GITHUB_ACTIONS_API_PASSWORD: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
        run: |
          # Create Basic Auth header
-         AUTH_HEADER=$(echo -n "${{ env.SIMON_GITHUB_ACTIONS_API_USERNAME }}:${{ env.SIMON_GITHUB_ACTIONS_API_PASSWORD }}" | base64)
+         AUTH_HEADER=$(echo -n "$SIMON_GITHUB_ACTIONS_API_USERNAME:$SIMON_GITHUB_ACTIONS_API_PASSWORD" | base64)
          
          # Send request and capture response
          response=$(curl -s -w "\n%{http_code}" \
