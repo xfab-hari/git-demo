@@ -120,7 +120,7 @@ jobs:
           SIMON_GITHUB_ACTIONS_API_PASSWORD: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
           PLAN_CONTENT: ${{ steps.plan.outputs.content }}
         run: |
-          # A short‑lived ID token signed by Google (populated by the auth step)
+          # A short-lived ID token signed by Google (populated by the auth step)
           ID_TOKEN=${{ steps.gcp-auth.outputs.id_token }}
 
           payload=$(jq -n --arg plan "$PLAN_CONTENT" \
