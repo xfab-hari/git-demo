@@ -1,58 +1,70 @@
+# Required GitHub Secrets:
+# AWS_ACCESS_KEY_ID: AWS access key for authentication
+# AWS_SECRET_ACCESS_KEY: AWS secret key for authentication
+# AWS_SESSION_TOKEN: AWS session token for temporary credentials
+# WEBHOOK_URL: URL endpoint for sending plan for analysis
+# GITHUB_TOKEN: Automatically provided by GitHub Actions, no need to set manually
+# SIMON_GITHUB_ACTIONS_API_USERNAME: Username for the simulation API
+# SIMON_GITHUB_ACTIONS_API_PASSWORD: Password for the simulation API
+# GOOGLE_CREDENTIALS: Google Cloud credentials for authentication
+# AZURE_CREDENTIALS: Azure service principal credentials JSON
+
 name: "Impact Simulation"
 
 on:
-  pull_request:
-    branches: [main]
-    paths: ["terraform/**"]
+ pull_request:
+   branches:
+   - main
+   paths:
+   - terraform/**
 
-# Minimal GitHub token permissions
+# Add permissions block
 permissions:
-  contents: read          # checkout + read terraform files
-  id-token: write         # needed when using OIDC -> Google Cloud
-  pull-requests: write    # optional: allows posting PR comments or annotations
-
-# Ensure only one run per PR is active at a time
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  contents: read #doing it explicitly
 
 env:
-  TF_INPUT: "false"        # disable interactive prompts
-  TF_LOG: "INFO"           # increase log verbosity for troubleshooting
-  TF_CLI_ARGS: "-no-color" # ensure machine‑readable output in logs
+ TF_LOG: INFO
+
+ # Simon github-actions related API Configuration
+#  SIMON_GITHUB_ACTIONS_API_USERNAME: ${{ secrets.SIMON_GITHUB_ACTIONS_API_USERNAME }}
+#  SIMON_GITHUB_ACTIONS_API_PASSWORD: ${{ secrets.SIMON_GITHUB_ACTIONS_API_PASSWORD }}
 
 jobs:
-  impact-simulation:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./terraform
+ terraform:
+   name: "Impact Simulation"
+   runs-on: ubuntu-latest
+   defaults:
+     run:
+       shell: bash
+       working-directory: ./terraform
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0    # faster commits → required for pull_request_target
+   steps:
+     - name: Checkout repository
+       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Terraform
-        id: setup
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.12.0
-          terraform_wrapper: false   # don’t inject the wrapper script; speeds up large plans
+     - name: Setup Terraform
+       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+       with:
+         terraform_version: 1.12.0
 
-      # Cache both the CLI plugin dir and the .terraform folder to speed up repeated runs
-      - name: Restore Terraform cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.terraform.d/plugin-cache
-            .terraform
-          key: ${{ runner.os }}-terraform-${{ hashFiles('**/*.tf') }}
-          restore-keys: |
-            ${{ runner.os }}-terraform-
-
+     - name: Detect Providers
+       id: detect
+       run: |
+         terraform init
+         PROVIDERS=$(terraform providers schema -json | jq -r '.provider_schemas | keys[]')
+         echo "has_aws=false" >> $GITHUB_OUTPUT
+         echo "has_gcp=false" >> $GITHUB_OUTPUT
+         echo "has_azure=false" >> $GITHUB_OUTPUT
+         
+         if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/aws"; then
+           echo "has_aws=true" >> $GITHUB_OUTPUT
+         fi
+         if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/google"; then
+           echo "has_gcp=true" >> $GITHUB_OUTPUT
+         fi
+         if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/azurerm"; then
+           echo "has_azure=true" >> $GITHUB_OUTPUT
+         fi
       - name: Detect active providers
         id: detect
         run: |
