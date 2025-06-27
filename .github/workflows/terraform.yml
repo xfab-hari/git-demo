@@ -79,6 +79,8 @@ jobs:
        uses: 'google-github-actions/auth@ba79af03959ebeac9769e648f473a284504d9193' # v2.1.10
        with:
          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+         create_credentials_file: true
+         export_environment_variables: true
 
      - name: Setup Azure Auth # needs to be verified
        if: steps.detect.outputs.has_azure == 'true'
