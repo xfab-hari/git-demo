@@ -81,6 +81,10 @@ jobs:
          credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
          create_credentials_file: true
          export_environment_variables: true
+    
+    - name: Setup Google Cloud SDK
+      if: steps.detect.outputs.has_gcp == 'true'
+      uses: 'google-github-actions/setup-gcloud@v1'
 
      - name: Setup Azure Auth # needs to be verified
        if: steps.detect.outputs.has_azure == 'true'
