@@ -108,25 +108,13 @@ jobs:
          # Create Basic Auth header
          # AUTH_HEADER=$(echo -n "$SIMON_GITHUB_ACTIONS_API_USERNAME:$SIMON_GITHUB_ACTIONS_API_PASSWORD" | base64)
 
-         # Install gcloud CLI silently
-         # curl -s https://sdk.cloud.google.com | bash -s -- --disable-prompts --quiet
-         # source ~/.bashrc
-         # gcloud components update --quiet
-
-         # Write service account credentials to a temporary file for gcloud auth
-         #echo '${{ secrets.GOOGLE_CREDENTIALS }}' > /tmp/service-account-key.json
-
-         # Authenticate with Google Cloud using the service account
-         # gcloud auth activate-service-account --key-file=/tmp/service-account-key.json
-
-         # clean up the temporary file
-         # rm /tmp/service-account-key.json
+         TOKEN=$(gcloud auth print-access-token)
 
          # Send request and capture response
          response=$(curl -s -w "\n%{http_code}" \
            -X POST \
            -H "Content-Type: application/json" \
-           -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+           -H "Authorization: Bearer $TOKEN" \
            -d '{
              "plan": "${{ env.PLAN_CONTENT }}",
              "github_context": {
