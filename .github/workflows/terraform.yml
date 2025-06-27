@@ -106,10 +106,10 @@ jobs:
          # Create Basic Auth header
          # AUTH_HEADER=$(echo -n "$SIMON_GITHUB_ACTIONS_API_USERNAME:$SIMON_GITHUB_ACTIONS_API_PASSWORD" | base64)
 
-         #install gcloud cli
-         curl https://sdk.cloud.google.com | bash
-         exec -l $SHELL
-         gcloud components update
+         # Install gcloud CLI silently
+         curl -s https://sdk.cloud.google.com | bash -s -- --disable-prompts --quiet
+         source ~/.bashrc
+         gcloud components update --quiet
 
          # Write service account credentials to a temporary file for gcloud auth
          echo '${{ secrets.GOOGLE_CREDENTIALS }}' > /tmp/service-account-key.json
