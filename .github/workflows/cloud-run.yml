@@ -16,15 +16,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: "586989009432"
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
       - name: Get access token
         id: token
@@ -34,7 +36,7 @@ jobs:
 
       - name: POST to Cloud Run
         run: |
-          curl -X POST ${{ secrets.CLOUD_RUN_URL }} \
+          curl -X POST ${{ secrets.WEBHOOK_URL }} \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
             -d '{"your":"payload"}'
