@@ -29,7 +29,27 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
-          terraform_version: 1.10.0
+          terraform_version: 1.12.0
+
+      - name: Detect Providers
+        id: detect
+        run: |
+          terraform init
+          PROVIDERS=$(terraform providers schema -json | jq -r '.provider_schemas | keys[]')
+          echo "has_aws=false" >> $GITHUB_OUTPUT
+          echo "has_gcp=true" >> $GITHUB_OUTPUT
+          echo "has_azure=false" >> $GITHUB_OUTPUT
+
+          if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/google"; then
+            echo "has_gcp=true" >> $GITHUB_OUTPUT
+          fi
+          if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/aws"; then
+            echo "has_aws=true" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/azurerm"; then
+            echo "has_azure=true" >> $GITHUB_OUTPUT
+          fi
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
