@@ -119,15 +119,15 @@ jobs:
          # AUTH_HEADER=$(echo -n "$SIMON_GITHUB_ACTIONS_API_USERNAME:$SIMON_GITHUB_ACTIONS_API_PASSWORD" | base64)
 
          # Get the service URL from the environment variable
-         # SERVICE_URL='${{ secrets.WEBHOOK_URL }}'
-         # ID_TOKEN=$(gcloud auth print-identity-token --audiences="$SERVICE_URL")
+         SERVICE_URL='${{ secrets.WEBHOOK_URL }}'
+         ID_TOKEN=$(gcloud auth print-identity-token --audiences="$SERVICE_URL")
          TOKEN=$(gcloud auth print-identity-token)
 
          # Send request and capture response
          response=$(curl -s -w "\n%{http_code}" \
            -X POST \
            -H "Content-Type: application/json" \
-           -H "Authorization: Bearer $TOKEN" \
+           -H "Authorization: Bearer $ID_TOKEN" \
            -d '{
              "plan": "${{ env.PLAN_CONTENT }}",
              "github_context": {
