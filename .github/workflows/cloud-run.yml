@@ -1,3 +1,7 @@
+# Required Secrets:
+# - GOOGLE_CREDENTIALS: Service account key for Google Cloud to authenticate to cloud run with github actions
+# - WEBHOOK_URL: Webhook URL for the cloud run service to receive the plan
+
 name: Impact Simulation
 
 on:
@@ -60,8 +64,6 @@ jobs:
 
       - name: Set up Google Cloud SDK # needed for cloud run to authenticate with github actions
         uses: google-github-actions/setup-gcloud@v2.1.4 # v2.1.4
-        with:
-          project_id: "586989009432"
 
 
       - name: Get access token # needed for cloud run to authenticate with github actions
