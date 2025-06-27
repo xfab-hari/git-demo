@@ -85,7 +85,32 @@ jobs:
 
       - name: POST to Cloud Run
         run: |
-          curl -X POST ${{ secrets.WEBHOOK_URL }} \
+          response=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -H "Content-Type: application/json" \
-            -d '{"your":"payload"}'
+            -d '{
+              "plan":"${{ env.PLAN_CONTENT }}",
+              "github_context":{
+                "owner": "${{ github.repository_owner }}",
+                "repo": "${{ github.repository.name }}",
+                "pr_number": "${{ github.event.pull_request.number }}",
+                "commit_sha": "${{ github.sha }}",
+                "run_id": "${{ github.run_id }}"
+              }
+            }' \
+            "${{ secrets.WEBHOOK_URL }}")
+          
+          # Split response into body and status code
+          status_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          # Print response details
+          echo "Response Code: $status_code"
+          echo "Response Body:"
+          echo "$body"
+
+          # Exit if status code is not 2xx
+          if [[ ! $status_code =~ ^2[0-9]{2}$ ]]; then
+            echo "Error: Received non-2xx status code: $status_code"
+            exit 1
+          fi
