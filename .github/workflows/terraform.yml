@@ -110,7 +110,7 @@ jobs:
 
          # Get the service URL from the environment variable
          SERVICE_URL='${{ secrets.WEBHOOK_URL }}'
-         ID_TOKEN=$(gcloud auth print-access-token --audiences="$SERVICE_URL")
+         ID_TOKEN=$(gcloud auth print-identity-token --audiences="$SERVICE_URL")
 
          # Send request and capture response
          response=$(curl -s -w "\n%{http_code}" \
