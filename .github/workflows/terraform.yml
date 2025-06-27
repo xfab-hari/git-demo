@@ -82,7 +82,7 @@ jobs:
        uses: 'google-github-actions/auth@v2.1.10' # v2.1.10
        with:
          token_format: 'id_token'
-         audiences: ${{ secrets.WEBHOOK_URL }}
+         audience: ${{ secrets.WEBHOOK_URL }}
          workload_identity_provider: 'projects/586989009432/locations/global/workloadIdentityPools/github-actions/providers/github'
          service_account: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_EMAIL }}
 
