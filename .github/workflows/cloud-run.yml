@@ -1,16 +1,26 @@
-name: Call Cloud Run via POST
+name: Impact Simulation
 
 on:
   pull_request:
     branches:
       - main
+    paths:
+      - terraform/**
 
 permissions:
-  contents: read
+  contents: read  #doing it explicitly
+
+env:
+  TF_LOG: INFO
 
 jobs:
-  call-cloud-run:
+  terraform:
+    name: Impact Simulation
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform
 
     steps:
       - name: Checkout code
