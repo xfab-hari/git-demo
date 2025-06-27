@@ -2,6 +2,11 @@ name: Call Cloud Run via POST
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      paths:
+        - '**'
 
 jobs:
   call-cloud-run:
