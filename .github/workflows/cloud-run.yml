@@ -1,0 +1,35 @@
+name: Call Cloud Run via POST
+
+on:
+  workflow_dispatch:
+
+jobs:
+  call-cloud-run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: "586989009432"
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Get access token
+        id: token
+        run: |
+          ACCESS_TOKEN=$(gcloud auth print-identity-token)
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+
+      - name: POST to Cloud Run
+        run: |
+          curl -X POST ${{ secrets.CLOUD_RUN_URL }} \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{"your":"payload"}'
