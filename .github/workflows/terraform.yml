@@ -123,7 +123,7 @@ jobs:
          # Get the service URL from the environment variable
          SERVICE_URL='${{ secrets.WEBHOOK_URL }}'
          # ID_TOKEN=$(gcloud auth print-identity-token --audiences="$SERVICE_URL")
-         ID_TOKEN=$(gcloud auth print-identity-token --audience="$SERVICE_URL")
+         ID_TOKEN=$(gcloud auth print-identity-token --audience="https://github.com/xfab-hari/git-demo")
          # TOKEN=$(gcloud auth print-identity-token)
 
          # Send request and capture response
