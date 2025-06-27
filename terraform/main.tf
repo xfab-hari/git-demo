@@ -4,6 +4,6 @@ provider "google" {
 }
 
 resource "google_storage_bucket" "long_named_bucket" {
-  name     = "this-is-"
+  name     = "test-bucket"
   location = "us-east-1"
 }
