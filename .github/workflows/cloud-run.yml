@@ -85,33 +85,19 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
 
-      - name: POST to Cloud Run
+      - name: POST plan to Cloud Run service with github context
         run: |
-          PLAN_CONTENT=$(cat tfplan.json)
-          payload=$(jq -n \
-            --argjson plan "$PLAN_CONTENT" \
-            --arg owner "$GITHUB_REPOSITORY_OWNER" \
-            --arg repo "$GITHUB_REPOSITORY" \
-            --arg pr_number "$GITHUB_PR_NUMBER" \
-            --arg commit_sha "$GITHUB_SHA" \
-            --arg author "$GITHUB_ACTOR" \
-            --arg run_id "$GITHUB_RUN_ID" \
-            '{
-              "plan": $plan,
-              "github_context": {
-                "owner": $owner,
-                "repo": $repo,
-                "pr_number": $pr_number,
-                "commit_sha": $commit_sha,
-                "author": $author,
-                "run_id": $run_id
-              }
-            }')
-
           response=$(curl -s -w "\n%{http_code}" -X POST \
             -H "Authorization: Bearer $ACCESS_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "$payload" \
+            -F "plan=@tfplan.json;type=application/json" \
+            -F "github_context={
+              "owner": "${{ github.repository_owner }}",
+              "repo": "${{ github.event.repository.name }}",
+              "pr_number": "${{ github.event.pull_request.number }}",
+              "commit_sha": "${{ github.sha }}",
+              "author": "${{ github.event.pull_request.user.login }}",
+              "run_id": "${{ github.run_id }}"
+            };type=application/json" \
             "${{ secrets.WEBHOOK_URL }}")
           
           # Split response into body and status code
