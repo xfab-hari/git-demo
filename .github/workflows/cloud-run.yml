@@ -97,6 +97,7 @@ jobs:
                 "repo": "${{ github.event.repository.name }}",
                 "pr_number": "${{ github.event.pull_request.number }}",
                 "commit_sha": "${{ github.sha }}",
+                "author": "${{ github.event.pull_request.user.login }}",
                 "run_id": "${{ github.run_id }}"
               }
             }' \
