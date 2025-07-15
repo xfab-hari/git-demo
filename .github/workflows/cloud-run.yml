@@ -91,12 +91,12 @@ jobs:
             -H "Authorization: Bearer $ACCESS_TOKEN" \
             -F "plan=@tfplan.json;type=application/json" \
             -F "github_context={
-              "owner": "${{ github.repository_owner }}",
-              "repo": "${{ github.event.repository.name }}",
-              "pr_number": "${{ github.event.pull_request.number }}",
-              "commit_sha": "${{ github.sha }}",
-              "author": "${{ github.event.pull_request.user.login }}",
-              "run_id": "${{ github.run_id }}"
+              \"owner\": \"${{ github.repository_owner }}\",
+              \"repo\": \"${{ github.event.repository.name }}\",
+              \"pr_number\": \"${{ github.event.pull_request.number }}\",
+              \"commit_sha\": \"${{ github.sha }}\",
+              \"author\": \"${{ github.event.pull_request.user.login }}\",
+              \"run_id\": \"${{ github.run_id }}\"
             };type=application/json" \
             "${{ secrets.WEBHOOK_URL }}")
           
