@@ -1,0 +1,78 @@
+name: Reusable Greet Workflow
+
+on:
+  # Allow manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      name:
+        description: "Name to greet"
+        required: true
+        default: "World"
+        type: string
+      environment:
+        description: "Environment name"
+        required: false
+        default: "dev"
+        type: string
+
+  # Allow being called from other workflows
+  workflow_call:
+    inputs:
+      name:
+        description: "Name to greet"
+        required: true
+        type: string
+      environment:
+        description: "Environment name"
+        required: false
+        default: "dev"
+        type: string
+    secrets:
+      EXAMPLE_SECRET:
+        required: false
+    outputs:
+      greeting:
+        description: "The greeting message"
+        value: ${{ jobs.greet.outputs.greeting }}
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+    outputs:
+      greeting: ${{ steps.greet.outputs.message }}
+    steps:
+      - name: Print Greeting
+        id: greet
+        run: |
+          # Handle both workflow_dispatch and workflow_call inputs
+          NAME="${{ inputs.name }}"
+          ENV="${{ inputs.environment }}"
+          
+          # Fallback for workflow_dispatch (older syntax)
+          if [ -z "$NAME" ]; then
+            NAME="${{ github.event.inputs.name }}"
+          fi
+          if [ -z "$ENV" ]; then
+            ENV="${{ github.event.inputs.environment }}"
+          fi
+          
+          MESSAGE="Hello, ${NAME}! Welcome to ${ENV} environment."
+          echo "🎉 ${MESSAGE}"
+          echo "message=${MESSAGE}" >> $GITHUB_OUTPUT
+
+      - name: Show Secret Status
+        run: |
+          if [ -n "${{ secrets.EXAMPLE_SECRET }}" ]; then
+            echo "✅ Secret was passed"
+          else
+            echo "ℹ️ No secret was passed (optional)"
+          fi
+
+      - name: Print Summary
+        run: |
+          echo "## Greeting Complete! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Name:** ${{ inputs.name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment:** ${{ inputs.environment }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+
