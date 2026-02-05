@@ -1,0 +1,116 @@
+# Required Secrets:
+# - GOOGLE_CREDENTIALS: Service account key for Google Cloud to authenticate to cloud run with github actions
+# - WEBHOOK_URL: Webhook URL for the cloud run service to receive the plan
+
+name: Impact Simulation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - terraform/**
+
+permissions:
+  contents: read  #doing it explicitly
+
+env:
+  TF_LOG: INFO
+
+jobs:
+  terraform:
+    name: Impact Simulation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        with:
+          terraform_version: 1.12.0
+
+      - name: Detect Providers
+        id: detect
+        run: |
+          terraform init
+          PROVIDERS=$(terraform providers schema -json | jq -r '.provider_schemas | keys[]')
+          echo "has_aws=false" >> $GITHUB_OUTPUT
+          echo "has_gcp=true" >> $GITHUB_OUTPUT
+          echo "has_azure=false" >> $GITHUB_OUTPUT
+
+          if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/google"; then
+            echo "has_gcp=true" >> $GITHUB_OUTPUT
+          fi
+          if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/aws"; then
+            echo "has_aws=true" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$PROVIDERS" | grep -q "registry.terraform.io/hashicorp/azurerm"; then
+            echo "has_azure=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud # needed for cloud run to authenticate with github actions
+        id: auth
+        uses: google-github-actions/auth@v2.1.10 # v2.1.10
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+
+      - name: Set up Google Cloud SDK # needed for cloud run to authenticate with github actions
+        uses: google-github-actions/setup-gcloud@v2.1.4 # v2.1.4
+
+
+      - name: Get access token # needed for cloud run to authenticate with github actions
+        id: token
+        run: |
+          ACCESS_TOKEN=$(gcloud auth print-identity-token)
+          echo "ACCESS_TOKEN=$ACCESS_TOKEN" >> $GITHUB_ENV
+
+
+      - name: Generate Plan
+        run: |
+          terraform init
+          terraform validate
+          terraform plan -no-color -input=false -out=tfplan.binary
+          terraform show -json tfplan.binary | grep -v "^::" | grep -v "^\[" | grep -v "^2025" | grep -v "^::debug" > tfplan.json
+          PLAN_CONTENT=$(cat tfplan.json | tr -d '\n' | base64 -w 0)
+          echo "PLAN_CONTENT<<EOF" >> $GITHUB_ENV
+          echo "$PLAN_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+
+      - name: POST plan to Cloud Run service with github context
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Authorization: Bearer $ACCESS_TOKEN" \
+            -F "plan=@tfplan.json;type=application/json" \
+            -F "github_context={
+              \"owner\": \"${{ github.repository_owner }}\",
+              \"repo\": \"${{ github.event.repository.name }}\",
+              \"pr_number\": \"${{ github.event.pull_request.number }}\",
+              \"commit_sha\": \"${{ github.sha }}\",
+              \"author\": \"${{ github.event.pull_request.user.login }}\",
+              \"run_id\": \"${{ github.run_id }}\"
+            };type=application/json" \
+            "${{ secrets.WEBHOOK_URL }}")
+          
+          # Split response into body and status code
+          status_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          # Print response details
+          echo "Response Code: $status_code"
+          echo "Response Body:"
+          echo "$body"
+
+          # Exit if status code is not 2xx
+          if [[ ! $status_code =~ ^2[0-9]{2}$ ]]; then
+            echo "Error: Received non-2xx status code: $status_code"
+            exit 1
+          fi
